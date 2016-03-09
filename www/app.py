@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+    # -*- coding: utf-8 -*-
 import logging; logging.basicConfig(level=logging.INFO)
 
 import asyncio,os,json,time
@@ -11,8 +11,9 @@ from config import configs
 from coroweb import add_routes, add_static,add_route,get
 from jinja2 import Environment, FileSystemLoader
 from Model import User, Comment, Blog, next_id
+from handlers import cookie2user,COOKIE_NAME
 #from handlers import index
-import handlers
+#import handlers
 #def index page
 # @get('/')
 # def index(request):
@@ -48,7 +49,7 @@ def init_jinja2(app, **kw):
 @asyncio.coroutine
 def init(loop):
     yield from orm.create_pool(loop=loop, **configs['db'])
-    app = web.Application(loop=loop,middlewares=[logger_factory,response_factory])
+    app = web.Application(loop=loop,middlewares=[logger_factory, auth_factory, response_factory])
 	#app.router.add_route('GET','/',index)
     init_jinja2(app, filters=dict(datetime=datetime_filter))
     add_routes(app, 'handlers')
@@ -101,6 +102,7 @@ def response_factory(app,handler):
                 resp.content_type = 'application/json;charset=utf-8'
                 return resp
             else:
+                r['__user__'] = request.__user__
                 resp = web.Response(body=app['__templating__'].get_template(template).render(**r).encode('utf-8'))
                 resp.content_type = 'text/html;charset=utf-8'
                 return resp								
@@ -112,6 +114,27 @@ def response_factory(app,handler):
         return resp	
 				
     return response	
+
+
+
+@asyncio.coroutine
+def auth_factory(app,handler):
+    @asyncio.coroutine
+    def auth(request):
+        logging.info('check user: %s %s' % (request.method, request.path))
+        request.__user__ = None
+        cookie_str = request.cookies.get(COOKIE_NAME)
+        if cookie_str:
+            user = yield from cookie2user(cookie_str)
+            if user:
+                logging.info('set current user: %s' % user.email)
+                request.__user__ = user
+        return (yield from handler(request))
+    return auth
+    
+    
+    
+
 	
 def datetime_filter(t):
     delta = int(time.time() - t)

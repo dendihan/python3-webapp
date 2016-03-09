@@ -5,6 +5,8 @@ from urllib import parse
 
 from aiohttp import web
 
+from apis import APIError
+
 #from apis import APIError
 
 def get(path):
@@ -141,10 +143,10 @@ class RequestHandler(object):
         try:
             r = yield from self._func(**kw)
             return r
-        except:
-            pass
-        # except APIError as e:
-            # return dict(error=e.error, data=e.data, message=e.message)
+        # except:
+            # pass
+        except APIError as e:
+             return dict(error=e.error, data=e.data, message=e.message)
             
             
             

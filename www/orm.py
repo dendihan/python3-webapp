@@ -117,7 +117,7 @@ class Model(dict,metaclass=ModelMetaclass):
             return self[key]
         except KeyError:
             raise AttributeError(r"'Model' object has no attribute '%s'" % key)
-    def __serattr__(self,key,value):
+    def __setattr__(self,key,value):
         self[key]=value
 		
     def getValue(self,key):
@@ -152,11 +152,14 @@ class Model(dict,metaclass=ModelMetaclass):
 	
     # @classmethod
     # @asyncio.coroutine
-    # def findAll(cls,fieldname,value):
-        # rs = yield from select('%s where `%s`=?' % (cls.__select__, fieldname), [value], 1)
+    # def findAll(cls):
+        # rs = yield from select('select * from %s' % cls.__table__,None)
         # if len(rs) == 0:
             # return 0
         # return rs
+    #def findAll(cls,fieldname,value):
+        #rs = yield from select('%s where `%s`=?' % (cls.__select__, fieldname), [value], 1)
+    
     @classmethod
     @asyncio.coroutine
     def findAll(cls, where=None, args=None, **kw):
@@ -182,14 +185,16 @@ class Model(dict,metaclass=ModelMetaclass):
                 args.extend(limit)
             else:
                 raise ValueError('Invalid limit value: %s' % str(limit))
-        # rs = await select(' '.join(sql), args)
+        #rs = await select(' '.join(sql), args)
         rs = yield from select(' '.join(sql), args)
         return [cls(**r) for r in rs]
 		
     @classmethod
     @asyncio.coroutine
-    def findNumber(cls,fieldname,value):
-        rs = yield from select('select count(*) _num_ from %s where `%s`=?' % (cls.__table__, fieldname), [value], 1)
+    # def findNumber(cls,fieldname,value):
+        # rs = yield from select('select count(*) _num_ from %s where `%s`=?' % (cls.__table__, fieldname), [value], 1)
+    def findNumber(cls):
+        rs = yield from select('select count(*) _num_ from %s' % cls.__table__, [], 1)
         if len(rs) == 0:
             return None
         return rs[0]['_num_']
