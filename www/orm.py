@@ -201,8 +201,9 @@ class Model(dict,metaclass=ModelMetaclass):
 	
     @asyncio.coroutine
     def remove(self):
-        args=[self.__primary_key__]
+        args=[self.getValue(self.__primary_key__)]
         rows = yield from execute(self.__delete__, args)
+ 
         if rows != 1:
             logging.warn('failed to delete record: affected rows: %s' % rows)
 	

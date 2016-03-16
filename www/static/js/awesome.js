@@ -365,7 +365,9 @@ if (typeof(Vue)!=='undefined') {
                 '<li v-if="! has_next" class="uk-disabled"><span><i class="uk-icon-angle-double-right"></i></span></li>' +
                 '<li v-if="has_next"><a v-attr="onclick:\'gotoPage(\' + (page_index+1) + \')\'" href="#0"><i class="uk-icon-angle-double-right"></i></a></li>' +
             '</ul>'
+    });
 }
+
 function redirect(url) {
     var
         hash_pos = url.indexOf('#'),
